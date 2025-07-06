@@ -97,6 +97,33 @@ app.get('/file/:filename', async (req, res) => {
   }
 });
 
+// List all files metadata
+app.get('/files', async (req, res) => {
+  try {
+    const files = await client.db('fileuploads').collection('uploads.files').find({}).toArray();
+    res.json(files);
+  } catch (error) {
+    console.error('Error fetching files:', error);
+    res.status(500).json({ err: 'Internal server error' });
+  }
+});
+
+// Delete file by filename
+app.delete('/file/:filename', async (req, res) => {
+  try {
+    const files = await client.db('fileuploads').collection('uploads.files').find({ filename: req.params.filename }).toArray();
+    if (!files || files.length === 0) {
+      return res.status(404).json({ err: 'No file exists' });
+    }
+    const fileId = files[0]._id;
+    await bucket.delete(fileId);
+    res.json({ message: `File ${req.params.filename} deleted successfully` });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ err: 'Internal server error' });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
