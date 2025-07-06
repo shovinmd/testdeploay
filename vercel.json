@@ -8,16 +8,19 @@
   ],
   "routes": [
     {
-      "src": "/upload",
-      "dest": "/api/upload.js"
+      "src": "^/upload$",
+      "dest": "api/upload.js"
     },
     {
-      "src": "/file/(.*)",
-      "dest": "/api/file/[filename].js?filename=$1"
+      "src": "^/file/(.*)$",
+      "dest": "api/file/[filename].js",
+      "headers": {
+        "x-filename": "$1"
+      }
     },
     {
-      "src": "/files",
-      "dest": "/api/files.js"
+      "src": "^/files$",
+      "dest": "api/files.js"
     }
   ]
 }
