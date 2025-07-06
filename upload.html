@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>File Upload</title>
+</head>
+<body>
+  <h1>Upload PDF, Audio, Video, or Image File</h1>
+  <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".pdf,audio/*,video/*,image/*" required />
+    <button type="submit">Upload</button>
+  </form>
+  <div id="result"></div>
+  <div id="retrieveSection" style="margin-top: 20px;">
+    <h2>Retrieve File</h2>
+    <input type="text" id="filenameInput" placeholder="Enter filename to retrieve" />
+    <button id="retrieveBtn">Retrieve</button>
+    <div id="fileDisplay" style="margin-top: 10px;"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+    const retrieveBtn = document.getElementById('retrieveBtn');
+    const filenameInput = document.getElementById('filenameInput');
+    const fileDisplay = document.getElementById('fileDisplay');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+          resultDiv.innerHTML = `<p>File uploaded successfully. Filename: ${data.file.filename}</p>`;
+        } else {
+          resultDiv.textContent = `Upload failed: ${data.err || 'Unknown error'}`;
+        }
+      } catch (err) {
+        resultDiv.textContent = `Upload error: ${err.message}`;
+      }
+    });
+
+    retrieveBtn.addEventListener('click', () => {
+      const filename = filenameInput.value.trim();
+      if (!filename) {
+        fileDisplay.textContent = 'Please enter a filename.';
+        return;
+      }
+      const fileUrl = `http://localhost:3000/file/${filename}`;
+      // Clear previous content
+      fileDisplay.innerHTML = '';
+
+      // Create an element to display the file based on extension
+      const ext = filename.split('.').pop().toLowerCase();
+      if (ext === 'pdf') {
+        const iframe = document.createElement('iframe');
+        iframe.src = fileUrl;
+        iframe.width = '600';
+        iframe.height = '400';
+        fileDisplay.appendChild(iframe);
+      } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = fileUrl;
+        fileDisplay.appendChild(audio);
+      } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+        const video = document.createElement('video');
+        video.controls = true;
+        video.width = 600;
+        video.src = fileUrl;
+        fileDisplay.appendChild(video);
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
+        const img = document.createElement('img');
+        img.src = fileUrl;
+        img.style.maxWidth = '600px';
+        fileDisplay.appendChild(img);
+      } else {
+        // For other file types, provide a download link
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.textContent = 'Download file';
+        link.download = filename;
+        fileDisplay.appendChild(link);
+      }
+    });
+  </script>
+</body>
+</html>
