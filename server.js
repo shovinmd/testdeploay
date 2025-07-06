@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { MongoClient, GridFSBucket } = require('mongodb');
 const multer = require('multer');
@@ -13,8 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 // MongoDB connection URI with username and password
-const uri = "mongodb+srv://shovin:w4ciSCxyJjenX4HB@cluster0.ey3rp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
+const uri = process.env.MONGODB_URI;
 
 const client = new MongoClient(uri, {
   serverApi: {
